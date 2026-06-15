@@ -1,0 +1,14 @@
+.tmp-chrome-profile*/
+.tmp-screens/
+node_modules/
+.vercel/
+.env
+.env.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+dist/
+build/
+.DS_Store
+Thumbs.db

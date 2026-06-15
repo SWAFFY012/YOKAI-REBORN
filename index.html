@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#050405">
+  <title>Yokai Reborn</title>
+  <link rel="stylesheet" href="public/fonts/google-fonts.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="nav">
+    <a class="mark" href="#hero" aria-label="Yokai Reborn">Yokai Reborn</a>
+    <nav class="nav-main" aria-label="Основная навигация">
+      <a href="#about">О проекте</a>
+      <a href="#story">История</a>
+      <a href="#battle">Битва</a>
+      <a href="#fall">Падение</a>
+      <a href="#covenant">Договор</a>
+      <a href="#artifacts">Артефакты</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero-scroll" id="hero">
+      <div class="hero-sticky">
+        <video class="hero-video" autoplay muted loop playsinline preload="auto">
+          <source src="public/videos/blinking-eye.mp4" type="video/mp4">
+        </video>
+        <canvas id="eye-sequence" aria-label="Погружение в красный глаз, управляемое прокруткой"></canvas>
+        <div class="shade"></div>
+        <div class="grain"></div>
+
+        <div class="hero-copy">
+          <h1><span>Yokai</span><strong>Reborn</strong></h1>
+        </div>
+
+        <div class="scroll-cue">
+          <span>Scroll</span><i></i><b id="progress">00</b>
+          <svg class="scroll-arrow" viewBox="0 0 150 190" aria-hidden="true">
+            <path d="M122 8 C130 50 111 82 76 85 C38 88 20 58 43 43 C68 28 112 49 119 91 C126 128 104 151 78 166 C66 173 56 175 48 176 M48 176 L69 154 M48 176 L77 184"/>
+          </svg>
+        </div>
+        <div class="iris-blackout"></div>
+      </div>
+    </section>
+
+    <section class="manga-section about" id="about">
+      <div class="section-title">
+        <span>О проекте</span>
+        <h2>Легенды не исчезают. Они меняют форму.</h2>
+      </div>
+
+      <div class="manga-page about-page">
+        <article class="manga-panel art-panel about-hero">
+          <img src="public/images/comic-chapter-03.png" alt="Рэн открывает красный архив">
+          <div class="sfx sfx-red">ГЛАЗ<br>ПОМНИТ</div>
+        </article>
+
+        <article class="manga-panel text-panel about-copy">
+          <div class="bubble bubble-sharp">
+            <p>После Великого Затмения граница между миром людей и царством духов стала тоньше волоса.</p>
+          </div>
+          <div class="caption-strip">Ёкаи вернулись не из лесов и храмов. Они проснулись в камерах, трещинах экранов и забытых цифровых архивах.</div>
+        </article>
+
+        <article class="manga-panel art-panel about-relic">
+          <img src="public/images/relic-archive.png" alt="Реликвии красного архива">
+          <div class="bubble bubble-small">Три реликвии держат память закрытой.</div>
+        </article>
+
+        <article class="manga-panel text-panel about-note">
+          <h3>Yokai Reborn</h3>
+          <p>Мрачная аниме-летопись о Рэн, девушке, в чьём левом глазу запечатан последний свидетель исчезнувшего клана.</p>
+          <p>Ей кажется, что она видит красные вспышки в темноте, но глаз помнит войну, предательство и договор, который нельзя нарушить.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="manga-section story" id="story">
+      <div class="section-title">
+        <span>История</span>
+        <h2>Три ночи до пробуждения.</h2>
+      </div>
+
+      <div class="manga-page story-page">
+        <article class="manga-panel art-panel story-top-a">
+          <img src="public/images/comic-chapter-01.png" alt="Рэн у подземного святилища">
+          <div class="panel-tag">Ночь первая</div>
+          <div class="bubble">Рэн слышит голос из заброшенного святилища под неоновым мегаполисом.</div>
+        </article>
+
+        <article class="manga-panel art-panel story-top-b">
+          <img src="public/images/blood-gate.png" alt="Красные врата под луной">
+          <div class="panel-tag">Ночь вторая</div>
+          <div class="bubble bubble-small">Каждый, кто видел красный глаз, забывает собственное имя до рассвета.</div>
+        </article>
+
+        <article class="manga-panel art-panel story-top-c">
+          <img src="public/images/japan-samurai.png" alt="Самурайская тень в городе">
+          <div class="panel-tag">Ночь третья</div>
+          <div class="bubble bubble-small">Чтобы спасти мир людей, Рэн должна вспомнить, кем была раньше.</div>
+        </article>
+
+        <article class="manga-panel art-panel story-main">
+          <img src="public/images/comic-chapter-01.png" alt="Большая панель истории Рэн">
+          <div class="speed-lines"></div>
+          <div class="sfx">ШЁПОТ</div>
+        </article>
+
+        <article class="manga-panel text-panel story-copy">
+          <div class="caption-strip">Когда кровавая луна совпадёт с чёрным солнцем, запечатанный глаз откроется в последний раз.</div>
+          <p>Каждая ночь вытаскивает из Рэн чужую память: зов под городом, имя без лица и врата, которые не должны открываться.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="manga-section battle" id="battle">
+      <div class="section-title">
+        <span>Битва</span>
+        <h2>Ночь четвёртая. Битва при Затмении.</h2>
+      </div>
+
+      <div class="manga-page battle-page">
+        <article class="manga-panel art-panel battle-wide">
+          <img src="public/images/comic-chapter-02.png" alt="Самурайская битва при красном затмении">
+          <div class="sfx sfx-huge">РРАХ</div>
+        </article>
+
+        <article class="manga-panel art-panel battle-cut">
+          <img src="public/images/eclipse-battle.png" alt="Самурай окружён ёкаями">
+          <div class="bubble bubble-small">Красная сталь против тьмы.</div>
+        </article>
+
+        <article class="manga-panel text-panel battle-text">
+          <h3>Удар, который забрал имя</h3>
+          <p>Каждый взмах меча разрывал дымовую плоть теневых демонов. Самураи бились не ради победы, а ради спасения памяти своего рода.</p>
+          <p>Если падёт последний хранитель, мир забудет даже само слово «ёкай».</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="manga-section fall" id="fall">
+      <div class="section-title">
+        <span>Падение</span>
+        <h2>Ночь пятая. Падение клана.</h2>
+      </div>
+
+      <div class="manga-page fall-page">
+        <article class="manga-panel art-panel fall-main">
+          <img src="public/images/clan-fall.png" alt="Самурай ставит печать на алтарь">
+          <div class="bubble">Последний мастер вонзил клинок в рунический алтарь.</div>
+        </article>
+
+        <article class="manga-panel text-panel fall-text">
+          <h3>Печать на алтаре</h3>
+          <p>Поднявшийся барьер запечатал демонов, но поглотил души воинов, превратив их в пепел и красные искры.</p>
+        </article>
+
+        <article class="manga-panel art-panel fall-side">
+          <img src="public/images/relic-archive.png" alt="Реликвии после падения клана">
+          <div class="sfx sfx-red">ПЕЧАТЬ</div>
+        </article>
+      </div>
+    </section>
+
+    <section class="manga-section covenant" id="covenant">
+      <div class="section-title">
+        <span>Договор</span>
+        <h2>Ночь шестая. Кровавый договор.</h2>
+      </div>
+
+      <div class="manga-page covenant-page">
+        <article class="manga-panel art-panel covenant-left">
+          <img src="public/images/japan-samurai.png" alt="Самурайская тень над мегаполисом">
+          <div class="panel-tag">Тень над мегаполисом</div>
+        </article>
+
+        <article class="manga-panel art-panel covenant-main">
+          <img src="public/images/comic-chapter-03.png" alt="Рэн пробуждает договор">
+          <div class="bubble bubble-sharp">Древний договор крови проснулся в цифровом мире.</div>
+        </article>
+
+        <article class="manga-panel text-panel covenant-text">
+          <p>Когда Рэн сорвала бумажный талисман со старинной шкатулки, гигантский призрачный воин восстал над небоскрёбами.</p>
+          <p>Теперь каждая камера, каждый экран и каждый телефон становятся маленькими воротами.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="manga-section artifacts" id="artifacts">
+      <div class="section-title">
+        <span>Артефакты</span>
+        <h2>Реликвии красного архива.</h2>
+      </div>
+
+      <div class="manga-page artifacts-page">
+        <article class="manga-panel relic-panel">
+          <img src="public/images/relic-archive.png" alt="Маска Они">
+          <div class="bubble bubble-small">Маска Они хранит ярость того, кто отказался стать чудовищем.</div>
+        </article>
+
+        <article class="manga-panel relic-panel">
+          <img src="public/images/clan-fall.png" alt="Клинок Кагэ">
+          <div class="bubble bubble-small">Клинок Кагэ рассекает не тело, а воспоминание о нём.</div>
+        </article>
+
+        <article class="manga-panel relic-panel">
+          <img src="public/images/comic-chapter-03.png" alt="Печать глаза">
+          <div class="bubble bubble-small">Печать глаза — последний ключ к вратам между мирами.</div>
+        </article>
+
+        <article class="manga-panel text-panel artifacts-note">
+          <h3>Коллекция</h3>
+          <p>Три реликвии удерживают память исчезнувших ёкаев. В каждой остался голос хранителя и цена древнего договора.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="manga-section oracle" id="oracle">
+      <div class="section-title">
+        <span>Интерактив</span>
+        <h2>Какой ёкай смотрит твоими глазами?</h2>
+      </div>
+
+      <div class="manga-page oracle-page">
+        <article class="manga-panel art-panel oracle-art">
+          <img src="public/images/blood-gate.png" alt="Красные врата пророчества">
+          <div class="sfx">ВЫБОР</div>
+        </article>
+
+        <article class="manga-panel oracle-card">
+          <p id="question">Что ты замечаешь первым в тёмной комнате?</p>
+          <div class="answers">
+            <button data-spirit="kitsune">Единственный выход</button>
+            <button data-spirit="oni">Чужое присутствие</button>
+            <button data-spirit="yurei">То, чего там нет</button>
+          </div>
+          <div class="oracle-result" id="oracle-result" aria-live="polite"></div>
+        </article>
+      </div>
+    </section>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
