@@ -159,7 +159,6 @@
 
         <article class="manga-panel art-panel fall-side">
           <img src="public/images/relic-archive.png" alt="Реликвии после падения клана">
-          <div class="sfx sfx-red">ПЕЧАТЬ</div>
         </article>
       </div>
     </section>
@@ -197,16 +196,19 @@
       <div class="manga-page artifacts-page">
         <article class="manga-panel relic-panel">
           <img src="public/images/relic-archive.png" alt="Маска Они">
+          <div class="artifact-name">Маска Они</div>
           <div class="bubble bubble-small">Маска Они хранит ярость того, кто отказался стать чудовищем.</div>
         </article>
 
         <article class="manga-panel relic-panel">
           <img src="public/images/clan-fall.png" alt="Клинок Кагэ">
+          <div class="artifact-name">Клинок Кагэ</div>
           <div class="bubble bubble-small">Клинок Кагэ рассекает не тело, а воспоминание о нём.</div>
         </article>
 
         <article class="manga-panel relic-panel">
           <img src="public/images/comic-chapter-03.png" alt="Печать глаза">
+          <div class="artifact-name">Печать глаза</div>
           <div class="bubble bubble-small">Печать глаза — последний ключ к вратам между мирами.</div>
         </article>
 
@@ -231,12 +233,59 @@
 
         <article class="manga-panel oracle-card">
           <p id="question">Что ты замечаешь первым в тёмной комнате?</p>
+          <div class="spirit-legend">
+            <b>Ёкай</b> — дух или чудовище из японских легенд. <b>Они</b> — яростный демон. <b>Юрэй</b> — призрак, который не смог уйти.
+          </div>
           <div class="answers">
             <button data-spirit="kitsune">Единственный выход</button>
             <button data-spirit="oni">Чужое присутствие</button>
             <button data-spirit="yurei">То, чего там нет</button>
           </div>
           <div class="oracle-result" id="oracle-result" aria-live="polite"></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="manga-section finale" id="finale">
+      <div class="section-title">
+        <span>Финал</span>
+        <h2>Сможешь закрыть красный глаз?</h2>
+      </div>
+
+      <div class="manga-page finale-page">
+        <article class="manga-panel art-panel finale-art">
+          <img src="public/images/comic-chapter-03.png" alt="Рэн смотрит в красный глаз">
+          <div class="sfx sfx-red">ВЗГЛЯД</div>
+        </article>
+
+        <article class="manga-panel finale-card">
+          <p class="finale-intro">Три решения покажут, понял ли ты легенду. Выбери путь Рэн и узнай, чем закончится ночь.</p>
+
+          <div class="quiz" id="lore-quiz">
+            <div class="quiz-step is-active" data-step="0">
+              <h3>Что первым разбудило ёкаев?</h3>
+              <button data-choice="shadow">Шорох в заброшенном святилище</button>
+              <button data-choice="blood">Кровавая луна и трещины между мирами</button>
+              <button data-choice="steel">Клинок Кагэ, оставленный без хозяина</button>
+            </div>
+
+            <div class="quiz-step" data-step="1">
+              <h3>Какая реликвия держит ярость под замком?</h3>
+              <button data-choice="mask">Маска Они</button>
+              <button data-choice="blade">Клинок Кагэ</button>
+              <button data-choice="eye">Печать глаза</button>
+            </div>
+
+            <div class="quiz-step" data-step="2">
+              <h3>Что должна сделать Рэн?</h3>
+              <button data-choice="remember">Вспомнить, кем была раньше</button>
+              <button data-choice="run">Сбежать из города до рассвета</button>
+              <button data-choice="break">Разбить все реликвии сразу</button>
+            </div>
+          </div>
+
+          <div class="quiz-result" id="quiz-result" aria-live="polite"></div>
+          <button class="abyss-button" id="restart-story" type="button">Взглянуть ей в глаза</button>
         </article>
       </div>
     </section>

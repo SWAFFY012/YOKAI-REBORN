@@ -134,6 +134,52 @@ document.querySelector(".answers")?.addEventListener("click", (event) => {
   document.querySelector("#oracle-result").textContent = spiritNames[button.getAttribute("data-spirit")];
 });
 
+const quizAnswers = ["blood", "mask", "remember"];
+let quizStep = 0;
+let quizScore = 0;
+
+function setQuizStep(step) {
+  document.querySelectorAll(".quiz-step").forEach((element, index) => {
+    element.classList.toggle("is-active", index === step);
+  });
+}
+
+document.querySelector("#lore-quiz")?.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-choice]");
+  if (!button) return;
+
+  const currentStep = button.closest(".quiz-step");
+  const stepIndex = Number(currentStep?.dataset.step || 0);
+  const isCorrect = button.dataset.choice === quizAnswers[stepIndex];
+  if (isCorrect) quizScore += 1;
+
+  currentStep.querySelectorAll("[data-choice]").forEach((item) => item.classList.remove("is-selected"));
+  button.classList.add("is-selected");
+
+  window.setTimeout(() => {
+    quizStep += 1;
+
+    if (quizStep < quizAnswers.length) {
+      setQuizStep(quizStep);
+      return;
+    }
+
+    const result = document.querySelector("#quiz-result");
+    const quiz = document.querySelector("#lore-quiz");
+    if (quiz) quiz.hidden = true;
+    if (result) {
+      result.textContent = quizScore >= 2
+        ? "Глаз дрогнул. Рэн вспомнила достаточно, чтобы закрыть врата до рассвета."
+        : "Глаз остался открыт. Легенда зовёт тебя пройти страницы ещё раз.";
+    }
+  }, 260);
+});
+
+document.querySelector("#restart-story")?.addEventListener("click", () => {
+  history.pushState(null, "", "#hero");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 if (!prefersReducedMotion) {
