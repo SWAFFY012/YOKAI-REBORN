@@ -657,10 +657,17 @@ canvas {
     "note note note";
 }
 
+.artifacts .section-title {
+  grid-template-columns: 190px minmax(0, 1fr) auto;
+}
+
 .relic-panel:nth-child(1) { grid-area: r1; }
 .relic-panel:nth-child(2) { grid-area: r2; }
 .relic-panel:nth-child(3) { grid-area: r3; }
-.artifacts-note { grid-area: note; }
+.artifacts-note {
+  grid-area: note;
+  align-content: center;
+}
 
 .relic-panel .bubble {
   left: 16px;
@@ -682,6 +689,40 @@ canvas {
   font: 900 18px/1 "Russo One", sans-serif;
   text-transform: uppercase;
   text-shadow: 3px 3px 0 #000;
+}
+
+.artifact-test-link {
+  display: inline-block;
+  width: fit-content;
+  margin-top: 16px;
+  padding: 15px 20px;
+  color: var(--paper);
+  background: #080506;
+  border: 3px solid rgba(241, 232, 220, .72);
+  box-shadow: 7px 7px 0 #000;
+  font-family: var(--wild-words);
+  font-size: clamp(20px, 1.5vw, 28px);
+  line-height: 1;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: transform .2s, color .2s, border-color .2s, background .2s;
+}
+
+.artifact-test-link:hover {
+  color: var(--gold);
+  background: #1a0609;
+  border-color: var(--scarlet);
+  transform: translateX(8px) skew(-3deg);
+}
+
+.artifact-title-link {
+  justify-self: end;
+  align-self: center;
+  margin-top: 0;
+  padding: 12px 15px;
+  white-space: nowrap;
+  font-size: clamp(16px, 1vw, 20px);
+  box-shadow: 5px 5px 0 #000;
 }
 
 .oracle-page {
@@ -747,7 +788,7 @@ canvas {
 
 .finale-page {
   grid-template-columns: .92fr 1.08fr;
-  grid-template-rows: minmax(560px, 1fr);
+  grid-template-rows: minmax(500px, 1fr);
 }
 
 .finale-art .sfx {
@@ -757,11 +798,13 @@ canvas {
 }
 
 .finale-card {
-  padding: clamp(22px, 2.8vw, 38px);
+  position: relative;
+  padding: clamp(20px, 2.25vw, 31px);
+  padding-bottom: clamp(92px, 8vw, 108px);
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 18px;
+  justify-content: flex-start;
+  gap: 14px;
   background:
     radial-gradient(circle at 82% 18%, rgba(255, 23, 76, .22), transparent 34%),
     linear-gradient(145deg, #26070d 0%, #100607 62%, #050405 100%);
@@ -780,7 +823,8 @@ canvas {
 
 .quiz {
   display: grid;
-  min-height: 260px;
+  min-height: 250px;
+  scroll-margin-top: 132px;
 }
 
 .quiz[hidden] {
@@ -805,7 +849,8 @@ canvas {
 }
 
 .quiz-step button,
-.abyss-button {
+.abyss-button,
+.quiz-reset {
   border: 3px solid var(--paper);
   color: var(--paper);
   background: #070405;
@@ -823,6 +868,11 @@ canvas {
   transition: transform .2s, border-color .2s, background .2s;
 }
 
+.quiz-step button:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
 .quiz-step button:hover,
 .quiz-step button.is-selected {
   border-color: var(--scarlet);
@@ -830,8 +880,20 @@ canvas {
   transform: translateX(8px) skew(-3deg);
 }
 
+.quiz-step button.is-correct {
+  border-color: #7dff9f;
+  background: #092112;
+  color: #f4fff6;
+}
+
+.quiz-step button.is-wrong {
+  border-color: #ff174c;
+  background: #21050b;
+  color: #fff3f6;
+}
+
 .quiz-result {
-  min-height: 88px;
+  min-height: 74px;
   color: var(--paper);
   font-family: var(--wild-words);
   font-size: clamp(22px, 1.9vw, 32px);
@@ -840,14 +902,38 @@ canvas {
   text-shadow: .55px 0 0 currentColor, 0 .55px 0 currentColor;
 }
 
-.abyss-button {
+.quiz-result:empty {
+  min-height: 0;
+}
+
+.finale-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  position: absolute;
+  right: clamp(20px, 2.25vw, 31px);
+  bottom: clamp(18px, 2.25vw, 30px);
+}
+
+.abyss-button,
+.quiz-reset {
   position: relative;
   isolation: isolate;
-  align-self: start;
   padding: 18px 24px;
   overflow: hidden;
+}
+
+.abyss-button {
   box-shadow: 8px 8px 0 #000;
   animation: red-pulse 2.7s ease-in-out infinite;
+}
+
+.finale-actions .abyss-button,
+.finale-actions .quiz-reset {
+  padding: 14px 16px;
+  font-size: clamp(17px, 1.18vw, 21px);
+  white-space: nowrap;
 }
 
 .abyss-button::before {
@@ -862,6 +948,20 @@ canvas {
 
 .abyss-button:hover {
   transform: translateY(-2px) skew(-3deg);
+}
+
+.quiz-reset {
+  background: transparent;
+  color: var(--paper);
+  border-color: rgba(241, 232, 220, .62);
+  box-shadow: none;
+  transition: border-color .2s, color .2s, transform .2s;
+}
+
+.quiz-reset:hover {
+  color: var(--gold);
+  border-color: var(--gold);
+  transform: translateY(-1px);
 }
 
 @keyframes red-sheen {
@@ -895,14 +995,28 @@ canvas {
 
 .motion-ready .about .manga-page.reveal {
   opacity: 1;
-  clip-path: circle(0% at 50% 46%);
-  transform: scale(.96);
-  transition: clip-path 1.05s cubic-bezier(.18, .82, .22, 1), transform 1.05s cubic-bezier(.18, .82, .22, 1);
+  transform: translate3d(0, 0, 0) scale(.985);
+  transition: transform 1.05s cubic-bezier(.18, .82, .22, 1);
 }
 
 .motion-ready .about .manga-page.reveal.is-visible {
-  clip-path: circle(145% at 50% 46%);
-  transform: scale(1);
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+.motion-ready .about .manga-page.reveal::before {
+  content: "";
+  position: absolute;
+  z-index: 8;
+  inset: -2px;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    radial-gradient(circle at 50% 46%, transparent 0 12%, rgba(255, 23, 76, .5) 13% 18%, rgba(5, 4, 5, .92) 23% 100%);
+  mix-blend-mode: multiply;
+}
+
+.motion-ready .about .manga-page.reveal.is-visible::before {
+  animation: iris-link 1.05s cubic-bezier(.18, .82, .22, 1) both;
 }
 
 .motion-ready .about .section-title.reveal {
@@ -913,6 +1027,21 @@ canvas {
 .motion-ready .about .section-title.reveal.is-visible {
   opacity: 1;
   transform: translateY(0) scale(1);
+}
+
+@keyframes iris-link {
+  0% {
+    opacity: 1;
+    clip-path: circle(0% at 50% 46%);
+  }
+  68% {
+    opacity: .96;
+    clip-path: circle(90% at 50% 46%);
+  }
+  100% {
+    opacity: 0;
+    clip-path: circle(145% at 50% 46%);
+  }
 }
 
 @media (max-width: 980px) {
@@ -930,6 +1059,14 @@ canvas {
 
   .section-title {
     grid-template-columns: 1fr;
+  }
+
+  .artifacts .section-title {
+    grid-template-columns: 1fr;
+  }
+
+  .artifact-title-link {
+    justify-self: start;
   }
 
   .about-page,
@@ -962,6 +1099,15 @@ canvas {
   .text-panel,
   .oracle-card {
     min-height: auto;
+  }
+
+  .finale-card {
+    padding-bottom: clamp(22px, 2.8vw, 38px);
+  }
+
+  .finale-actions {
+    position: static;
+    margin-top: 8px;
   }
 
   .story-page .manga-panel,

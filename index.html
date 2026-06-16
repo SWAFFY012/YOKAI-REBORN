@@ -191,6 +191,7 @@
       <div class="section-title">
         <span>Артефакты</span>
         <h2>Реликвии красного архива.</h2>
+        <a class="artifact-test-link artifact-title-link" href="#lore-quiz">Перейти к испытанию</a>
       </div>
 
       <div class="manga-page artifacts-page">
@@ -234,7 +235,7 @@
         <article class="manga-panel oracle-card">
           <p id="question">Что ты замечаешь первым в тёмной комнате?</p>
           <div class="spirit-legend">
-            <b>Ёкай</b> — дух или чудовище из японских легенд. <b>Они</b> — яростный демон. <b>Юрэй</b> — призрак, который не смог уйти.
+            <b>Ёкай</b> — дух или чудовище из японских легенд. <b>Кицунэ</b> — лисий дух-обманщик. <b>Они</b> — яростный демон. <b>Юрэй</b> — призрак, который не смог уйти.
           </div>
           <div class="answers">
             <button data-spirit="kitsune">Единственный выход</button>
@@ -259,7 +260,8 @@
         </article>
 
         <article class="manga-panel finale-card">
-          <p class="finale-intro">Три решения покажут, понял ли ты легенду. Выбери путь Рэн и узнай, чем закончится ночь.</p>
+          <p class="finale-intro">Пять решений покажут, понял ли ты легенду. Выбери путь Рэн и узнай, чем закончится ночь.</p>
+          <div class="quiz-result" id="quiz-result" aria-live="polite"></div>
 
           <div class="quiz" id="lore-quiz">
             <div class="quiz-step is-active" data-step="0">
@@ -277,6 +279,20 @@
             </div>
 
             <div class="quiz-step" data-step="2">
+              <h3>Что рассекает Клинок Кагэ?</h3>
+              <button data-choice="stone">Каменные ворота старого храма</button>
+              <button data-choice="memory">Воспоминание о теле</button>
+              <button data-choice="shadow">Тень, которая падает на город</button>
+            </div>
+
+            <div class="quiz-step" data-step="3">
+              <h3>Кто такой Юрэй?</h3>
+              <button data-choice="fox">Лисий дух, который меняет лица</button>
+              <button data-choice="demon">Демон, живущий в маске Они</button>
+              <button data-choice="ghost">Призрак, который не смог уйти</button>
+            </div>
+
+            <div class="quiz-step" data-step="4">
               <h3>Что должна сделать Рэн?</h3>
               <button data-choice="remember">Вспомнить, кем была раньше</button>
               <button data-choice="run">Сбежать из города до рассвета</button>
@@ -284,8 +300,10 @@
             </div>
           </div>
 
-          <div class="quiz-result" id="quiz-result" aria-live="polite"></div>
-          <button class="abyss-button" id="restart-story" type="button">Взглянуть ей в глаза</button>
+          <div class="finale-actions">
+            <button class="abyss-button" id="restart-story" type="button">Взглянуть ей в глаза</button>
+            <button class="quiz-reset" id="retake-quiz" type="button">Пройти тест ещё раз</button>
+          </div>
         </article>
       </div>
     </section>

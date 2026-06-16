@@ -134,9 +134,9 @@ document.querySelector(".answers")?.addEventListener("click", (event) => {
   document.querySelector("#oracle-result").textContent = spiritNames[button.getAttribute("data-spirit")];
 });
 
-const quizAnswers = ["blood", "mask", "remember"];
+const quizAnswers = ["blood", "mask", "memory", "ghost", "remember"];
 let quizStep = 0;
-let quizScore = 0;
+let quizLocked = false;
 
 function setQuizStep(step) {
   document.querySelectorAll(".quiz-step").forEach((element, index) => {
@@ -144,40 +144,78 @@ function setQuizStep(step) {
   });
 }
 
+function resetQuiz() {
+  quizStep = 0;
+  quizLocked = false;
+
+  const quiz = document.querySelector("#lore-quiz");
+  const result = document.querySelector("#quiz-result");
+  const finaleCard = document.querySelector(".finale-card");
+  if (quiz) quiz.hidden = false;
+  if (result) result.textContent = "";
+  finaleCard?.classList.remove("is-complete");
+
+  document.querySelectorAll("#lore-quiz [data-choice]").forEach((item) => {
+    item.classList.remove("is-selected", "is-correct", "is-wrong");
+    item.disabled = false;
+  });
+
+  setQuizStep(0);
+}
+
 document.querySelector("#lore-quiz")?.addEventListener("click", (event) => {
   const button = event.target.closest("[data-choice]");
-  if (!button) return;
+  if (!button || quizLocked) return;
 
   const currentStep = button.closest(".quiz-step");
   const stepIndex = Number(currentStep?.dataset.step || 0);
   const isCorrect = button.dataset.choice === quizAnswers[stepIndex];
-  if (isCorrect) quizScore += 1;
+  const result = document.querySelector("#quiz-result");
+  const finaleCard = document.querySelector(".finale-card");
+  quizLocked = true;
 
-  currentStep.querySelectorAll("[data-choice]").forEach((item) => item.classList.remove("is-selected"));
-  button.classList.add("is-selected");
+  currentStep.querySelectorAll("[data-choice]").forEach((item) => {
+    item.classList.remove("is-selected", "is-correct", "is-wrong");
+    item.disabled = isCorrect;
+  });
+  button.classList.add("is-selected", isCorrect ? "is-correct" : "is-wrong");
+
+  if (!isCorrect) {
+    if (result) result.textContent = "Подумай ещё.";
+    quizLocked = false;
+    return;
+  }
+
+  if (result) result.textContent = "";
 
   window.setTimeout(() => {
     quizStep += 1;
 
     if (quizStep < quizAnswers.length) {
+      if (result) result.textContent = "";
       setQuizStep(quizStep);
+      quizLocked = false;
       return;
     }
 
-    const result = document.querySelector("#quiz-result");
     const quiz = document.querySelector("#lore-quiz");
     if (quiz) quiz.hidden = true;
     if (result) {
-      result.textContent = quizScore >= 2
-        ? "Глаз дрогнул. Рэн вспомнила достаточно, чтобы закрыть врата до рассвета."
-        : "Глаз остался открыт. Легенда зовёт тебя пройти страницы ещё раз.";
+      result.textContent = "Глаз дрогнул. Рэн вспомнила достаточно, чтобы закрыть врата до рассвета.";
     }
-  }, 260);
+    finaleCard?.classList.add("is-complete");
+    quizLocked = false;
+  }, 520);
 });
 
 document.querySelector("#restart-story")?.addEventListener("click", () => {
   history.pushState(null, "", "#hero");
   window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+document.querySelector("#retake-quiz")?.addEventListener("click", () => {
+  resetQuiz();
+  document.querySelector("#lore-quiz")?.scrollIntoView({ behavior: "smooth", block: "center" });
 });
 
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
