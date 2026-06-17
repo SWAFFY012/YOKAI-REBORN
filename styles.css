@@ -914,9 +914,9 @@ canvas {
 
 .quiz-result:not(:empty) {
   padding: 15px 17px;
-  border: 3px solid var(--paper);
-  background: #070405;
-  box-shadow: 6px 6px 0 #000;
+  border: 3px solid rgba(241, 232, 220, .58);
+  background: rgba(241, 232, 220, .09);
+  box-shadow: 6px 6px 0 rgba(5, 4, 5, .34), inset 0 0 0 1px rgba(255, 255, 255, .08);
 }
 
 .finale-card.is-complete .quiz-result {
