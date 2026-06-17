@@ -7,12 +7,15 @@ const copy = document.querySelector(".hero-copy");
 const cue = document.querySelector(".scroll-cue");
 const blackout = document.querySelector(".iris-blackout");
 const counter = document.querySelector("#progress");
+const aboutSection = document.querySelector("#about");
 const frames = Array(FRAME_COUNT);
 const loadingFrames = new Set();
 
 let currentFrame = -1;
 let desiredFrame = 0;
 let rafPending = false;
+let heroPassThroughLocked = false;
+let lastHeroScrollY = window.scrollY;
 
 const src = (index) => `public/frames/eye-${String(index + 1).padStart(3, "0")}.webp`;
 
@@ -43,6 +46,24 @@ function preloadRange(start, end) {
 
 function preloadHeroSequence() {
   preloadRange(0, FRAME_COUNT - 1);
+}
+
+function passThroughHero(sequenceProgress, isScrollingDown) {
+  if (!aboutSection || heroPassThroughLocked || !isScrollingDown || sequenceProgress < 0.94) return;
+
+  heroPassThroughLocked = true;
+  desiredFrame = FRAME_COUNT - 1;
+  loadFrame(desiredFrame);
+  render(desiredFrame);
+
+  requestAnimationFrame(() => {
+    const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+    aboutSection.scrollIntoView({ behavior, block: "start" });
+  });
+
+  window.setTimeout(() => {
+    heroPassThroughLocked = false;
+  }, 1400);
 }
 
 function sizeCanvas() {
@@ -92,9 +113,12 @@ function updateHero() {
 
   const rect = hero.getBoundingClientRect();
   const distance = hero.offsetHeight - innerHeight;
+  const scrollY = window.scrollY;
+  const isScrollingDown = scrollY > lastHeroScrollY;
   const progress = Math.min(1, Math.max(0, -rect.top / distance));
   const sequenceProgress = Math.min(1, Math.max(0, (progress - 0.08) / 0.82));
   desiredFrame = Math.round(sequenceProgress * (FRAME_COUNT - 1));
+  const diveProgress = Math.min(1, Math.max(0, (sequenceProgress - 0.88) / 0.12));
 
   const canvasOpacity = sequenceProgress > 0 ? Math.min(1, sequenceProgress * 8) : 0;
   if (canvas) canvas.style.opacity = canvasOpacity;
@@ -106,7 +130,7 @@ function updateHero() {
     copy.style.transform = `translateY(calc(-42% - ${progress * 60}px))`;
   }
   if (cue) cue.style.opacity = Math.max(0, 1 - progress * 2.5);
-  if (blackout) blackout.style.opacity = Math.max(0, (progress - 0.91) / 0.09);
+  if (blackout) blackout.style.opacity = diveProgress;
   if (counter) counter.textContent = String(Math.round(sequenceProgress * 100)).padStart(2, "0");
   document.documentElement.style.setProperty("--progress", `${sequenceProgress * 100}%`);
 
@@ -116,6 +140,8 @@ function updateHero() {
     loadFrame(Math.max(0, desiredFrame - i));
   }
   render(desiredFrame);
+  passThroughHero(sequenceProgress, isScrollingDown);
+  lastHeroScrollY = scrollY;
 }
 
 function requestHeroUpdate() {
