@@ -77,7 +77,6 @@ canvas {
   grid-template-columns: minmax(170px, 1fr) auto;
   align-items: center;
   background: linear-gradient(#050405f5, #050405c8 68%, transparent);
-  border-bottom: 1px solid rgba(241, 232, 220, .14);
 }
 
 .mark {
