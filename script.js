@@ -8,6 +8,7 @@ const cue = document.querySelector(".scroll-cue");
 const blackout = document.querySelector(".iris-blackout");
 const counter = document.querySelector("#progress");
 const frames = Array(FRAME_COUNT);
+const loadingFrames = new Set();
 
 let currentFrame = -1;
 let desiredFrame = 0;
@@ -16,14 +17,32 @@ let rafPending = false;
 const src = (index) => `public/frames/eye-${String(index + 1).padStart(3, "0")}.webp`;
 
 function loadFrame(index) {
-  if (frames[index]) return;
+  if (index < 0 || index >= FRAME_COUNT || frames[index] || loadingFrames.has(index)) return;
+  loadingFrames.add(index);
   const image = new Image();
   image.decoding = "async";
+  image.loading = "eager";
+  image.fetchPriority = "high";
   image.src = src(index);
   image.onload = () => {
+    loadingFrames.delete(index);
     frames[index] = image;
-    if (index === desiredFrame) render(index);
+    const isNeededFrame = desiredFrame >= currentFrame
+      ? index <= desiredFrame && index >= currentFrame
+      : index >= desiredFrame && index <= currentFrame;
+    if (isNeededFrame) render(index);
   };
+  image.onerror = () => loadingFrames.delete(index);
+}
+
+function preloadRange(start, end) {
+  const from = Math.max(0, start);
+  const to = Math.min(FRAME_COUNT - 1, end);
+  for (let i = from; i <= to; i++) loadFrame(i);
+}
+
+function preloadHeroSequence() {
+  preloadRange(0, FRAME_COUNT - 1);
 }
 
 function sizeCanvas() {
@@ -37,27 +56,34 @@ function sizeCanvas() {
 function render(index) {
   if (!canvas || !ctx) return;
 
-  let image = frames[index];
+  let renderIndex = index;
+  let image = frames[renderIndex];
   if (!image) {
-    let closestIndex = -1;
-    let minDiff = Infinity;
-    for (let i = 0; i < FRAME_COUNT; i++) {
-      if (!frames[i]) continue;
-      const diff = Math.abs(i - index);
-      if (diff < minDiff) {
-        minDiff = diff;
-        closestIndex = i;
+    const isMovingForward = index >= currentFrame;
+    if (isMovingForward) {
+      for (let i = index; i >= Math.max(currentFrame, 0); i--) {
+        if (!frames[i]) continue;
+        renderIndex = i;
+        image = frames[i];
+        break;
+      }
+    } else {
+      for (let i = index; i <= currentFrame; i++) {
+        if (!frames[i]) continue;
+        renderIndex = i;
+        image = frames[i];
+        break;
       }
     }
-    if (closestIndex === -1) return;
-    image = frames[closestIndex];
+
+    if (!image) return;
   }
 
   const scale = Math.max(canvas.width / image.naturalWidth, canvas.height / image.naturalHeight);
   const width = image.naturalWidth * scale;
   const height = image.naturalHeight * scale;
   ctx.drawImage(image, (canvas.width - width) / 2, (canvas.height - height) / 2, width, height);
-  currentFrame = index;
+  currentFrame = renderIndex;
 }
 
 function updateHero() {
@@ -85,7 +111,7 @@ function updateHero() {
   document.documentElement.style.setProperty("--progress", `${sequenceProgress * 100}%`);
 
   loadFrame(desiredFrame);
-  for (let i = 1; i <= 5; i++) {
+  for (let i = 1; i <= 18; i++) {
     loadFrame(Math.min(FRAME_COUNT - 1, desiredFrame + i));
     loadFrame(Math.max(0, desiredFrame - i));
   }
@@ -528,7 +554,7 @@ if (!prefersReducedMotion) {
 }
 
 loadFrame(0);
-for (let i = 1; i < 8; i++) loadFrame(i);
+preloadHeroSequence();
 
 window.addEventListener("resize", sizeCanvas);
 window.addEventListener("scroll", requestHeroUpdate, { passive: true });
