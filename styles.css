@@ -99,7 +99,7 @@ canvas {
 }
 
 .hero-scroll {
-  height: 340vh;
+  height: 220vh;
 }
 
 .hero-sticky {
@@ -1189,7 +1189,7 @@ canvas {
 
 @media (max-width: 640px) {
   .hero-scroll {
-    height: 300vh;
+    height: 220vh;
   }
 
   .hero-copy {

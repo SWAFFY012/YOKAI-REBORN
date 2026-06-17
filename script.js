@@ -1,4 +1,7 @@
 const FRAME_COUNT = 151;
+const FRAME_START = 40;
+const FRAME_END = FRAME_COUNT - 1;
+const SEQUENCE_SCROLL_END = 0.68;
 const canvas = document.querySelector("#eye-sequence");
 const ctx = canvas?.getContext("2d", { alpha: false });
 const hero = document.querySelector(".hero-scroll");
@@ -49,7 +52,7 @@ function preloadHeroSequence() {
 }
 
 function passThroughHero(sequenceProgress, isScrollingDown) {
-  if (!aboutSection || heroPassThroughLocked || !isScrollingDown || sequenceProgress < 0.94) return;
+  if (!aboutSection || heroPassThroughLocked || !isScrollingDown || sequenceProgress < 0.9) return;
 
   heroPassThroughLocked = true;
   desiredFrame = FRAME_COUNT - 1;
@@ -116,9 +119,9 @@ function updateHero() {
   const scrollY = window.scrollY;
   const isScrollingDown = scrollY > lastHeroScrollY;
   const progress = Math.min(1, Math.max(0, -rect.top / distance));
-  const sequenceProgress = Math.min(1, Math.max(0, (progress - 0.08) / 0.82));
-  desiredFrame = Math.round(sequenceProgress * (FRAME_COUNT - 1));
-  const diveProgress = Math.min(1, Math.max(0, (sequenceProgress - 0.88) / 0.12));
+  const sequenceProgress = Math.min(1, Math.max(0, progress / SEQUENCE_SCROLL_END));
+  desiredFrame = FRAME_START + Math.round(sequenceProgress * (FRAME_END - FRAME_START));
+  const diveProgress = Math.min(1, Math.max(0, (sequenceProgress - 0.78) / 0.22));
 
   const canvasOpacity = sequenceProgress > 0 ? Math.min(1, sequenceProgress * 8) : 0;
   if (canvas) canvas.style.opacity = canvasOpacity;
