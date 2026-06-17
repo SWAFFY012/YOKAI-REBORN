@@ -137,6 +137,7 @@ document.querySelector(".answers")?.addEventListener("click", (event) => {
 const quizAnswers = ["blood", "mask", "memory", "ghost", "remember"];
 let quizStep = 0;
 let quizLocked = false;
+let replaySectionAnimations = () => {};
 
 function setQuizStep(step) {
   document.querySelectorAll(".quiz-step").forEach((element, index) => {
@@ -181,7 +182,7 @@ document.querySelector("#lore-quiz")?.addEventListener("click", (event) => {
   button.classList.add("is-selected", isCorrect ? "is-correct" : "is-wrong");
 
   if (!isCorrect) {
-    if (result) result.textContent = "Подумай ещё.";
+    if (result) result.textContent = "Подумай ещё";
     quizLocked = false;
     return;
   }
@@ -209,8 +210,10 @@ document.querySelector("#lore-quiz")?.addEventListener("click", (event) => {
 });
 
 document.querySelector("#restart-story")?.addEventListener("click", () => {
+  resetQuiz();
   history.pushState(null, "", "#hero");
   window.scrollTo({ top: 0, behavior: "smooth" });
+  window.setTimeout(() => replaySectionAnimations(), prefersReducedMotion ? 0 : 700);
 });
 
 document.querySelector("#retake-quiz")?.addEventListener("click", () => {
@@ -242,6 +245,13 @@ if (!prefersReducedMotion) {
   }, { threshold: 0.12, rootMargin: "0px 0px -8% 0px" });
 
   revealElements.forEach((element) => revealObserver.observe(element));
+
+  replaySectionAnimations = () => {
+    revealElements.forEach((element) => {
+      element.classList.remove("is-visible");
+      revealObserver.observe(element);
+    });
+  };
 
   const sectionObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {

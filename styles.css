@@ -88,7 +88,7 @@ canvas {
 
 .nav-main {
   display: flex;
-  gap: clamp(14px, 2.6vw, 34px);
+  gap: clamp(12px, 2vw, 28px);
   align-items: center;
 }
 
@@ -182,11 +182,12 @@ canvas {
   bottom: 30px;
   left: 50%;
   transform: translateX(-50%);
-  display: grid;
-  grid-template-columns: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   color: rgba(241, 232, 220, .72);
-  font: 700 8px/1 "IBM Plex Mono", monospace;
-  letter-spacing: .2em;
+  font: 700 15px/1 "IBM Plex Mono", monospace;
+  letter-spacing: .16em;
   text-transform: uppercase;
 }
 
@@ -196,14 +197,12 @@ canvas {
 }
 
 .scroll-arrow {
-  position: absolute;
-  width: 78px;
-  height: 100px;
-  left: calc(100% + 14px);
-  bottom: 19px;
+  position: static;
+  width: 26px;
+  height: 26px;
   overflow: visible;
-  transform: rotate(-30deg);
-  transform-origin: center bottom;
+  transform: rotate(-32deg) translateY(1px);
+  transform-origin: center center;
   filter: drop-shadow(0 0 5px rgba(208, 0, 58, .45));
 }
 
@@ -760,22 +759,25 @@ canvas {
 
 .answers button {
   width: 100%;
-  padding: 16px 18px;
+  padding: 15px 17px;
   border: 3px solid var(--paper);
   color: var(--paper);
   background: #0a0607;
-  font: 900 15px/1 "Russo One", sans-serif;
+  font-family: var(--wild-words);
+  font-size: clamp(20px, 1.6vw, 27px);
+  line-height: 1;
   text-align: left;
   text-transform: uppercase;
   cursor: pointer;
-  transition: transform .2s, background .2s, color .2s;
+  transition: transform .2s, border-color .2s, background .2s, color .2s;
 }
 
 .answers button:hover,
 .answers button.is-selected {
   color: #fff;
-  background: var(--red);
-  transform: translateX(8px) skew(-4deg);
+  border-color: var(--scarlet);
+  background: #23070d;
+  transform: translateX(8px) skew(-3deg);
 }
 
 .oracle-result {
@@ -893,17 +895,34 @@ canvas {
 }
 
 .quiz-result {
-  min-height: 74px;
+  align-self: flex-end;
+  width: min(360px, 58%);
+  min-height: 0;
+  margin: -2px 0 4px auto;
   color: var(--paper);
   font-family: var(--wild-words);
-  font-size: clamp(22px, 1.9vw, 32px);
-  line-height: 1.02;
+  font-size: clamp(20px, 1.6vw, 27px);
+  line-height: 1;
   text-transform: uppercase;
   text-shadow: .55px 0 0 currentColor, 0 .55px 0 currentColor;
 }
 
 .quiz-result:empty {
+  width: 0;
   min-height: 0;
+}
+
+.quiz-result:not(:empty) {
+  padding: 15px 17px;
+  border: 3px solid var(--paper);
+  background: #070405;
+  box-shadow: 6px 6px 0 #000;
+}
+
+.finale-card.is-complete .quiz-result {
+  align-self: flex-start;
+  width: min(640px, 100%);
+  margin-left: 0;
 }
 
 .finale-actions {
@@ -991,57 +1010,6 @@ canvas {
 .motion-ready .reveal.is-visible {
   opacity: 1;
   transform: translate3d(0, 0, 0);
-}
-
-.motion-ready .about .manga-page.reveal {
-  opacity: 1;
-  transform: translate3d(0, 0, 0) scale(.985);
-  transition: transform 1.05s cubic-bezier(.18, .82, .22, 1);
-}
-
-.motion-ready .about .manga-page.reveal.is-visible {
-  transform: translate3d(0, 0, 0) scale(1);
-}
-
-.motion-ready .about .manga-page.reveal::before {
-  content: "";
-  position: absolute;
-  z-index: 8;
-  inset: -2px;
-  pointer-events: none;
-  opacity: 0;
-  background:
-    radial-gradient(circle at 50% 46%, transparent 0 12%, rgba(255, 23, 76, .5) 13% 18%, rgba(5, 4, 5, .92) 23% 100%);
-  mix-blend-mode: multiply;
-}
-
-.motion-ready .about .manga-page.reveal.is-visible::before {
-  animation: iris-link 1.05s cubic-bezier(.18, .82, .22, 1) both;
-}
-
-.motion-ready .about .section-title.reveal {
-  opacity: 0;
-  transform: translateY(28px) scale(.98);
-}
-
-.motion-ready .about .section-title.reveal.is-visible {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-}
-
-@keyframes iris-link {
-  0% {
-    opacity: 1;
-    clip-path: circle(0% at 50% 46%);
-  }
-  68% {
-    opacity: .96;
-    clip-path: circle(90% at 50% 46%);
-  }
-  100% {
-    opacity: 0;
-    clip-path: circle(145% at 50% 46%);
-  }
 }
 
 @media (max-width: 980px) {
