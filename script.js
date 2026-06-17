@@ -139,9 +139,58 @@ let quizStep = 0;
 let quizLocked = false;
 let replaySectionAnimations = () => {};
 
+function restoreQuizButton(button) {
+  if (!button) return;
+  if (button.dataset.originalText) button.textContent = button.dataset.originalText;
+  button.classList.remove("is-selected", "is-correct", "is-wrong", "is-vaporizing", "is-vaporized");
+  button.disabled = false;
+}
+
+function clearQuizStepEffects(stepElement) {
+  stepElement?.querySelectorAll("[data-choice]").forEach(restoreQuizButton);
+}
+
+function updateQuizNav() {
+  const prev = document.querySelector("#prev-question");
+  const next = document.querySelector("#next-question");
+  if (prev) prev.disabled = quizStep <= 0;
+  if (next) next.disabled = quizStep >= quizAnswers.length - 1;
+}
+
 function setQuizStep(step) {
+  quizStep = Math.max(0, Math.min(quizAnswers.length - 1, step));
   document.querySelectorAll(".quiz-step").forEach((element, index) => {
-    element.classList.toggle("is-active", index === step);
+    const isActive = index === quizStep;
+    element.classList.toggle("is-active", isActive);
+    if (isActive) clearQuizStepEffects(element);
+  });
+  updateQuizNav();
+}
+
+function vaporizeWrongAnswers(stepElement, correctButton) {
+  const wrongButtons = Array.from(stepElement.querySelectorAll("[data-choice]"))
+    .filter((item) => item !== correctButton);
+
+  wrongButtons.forEach((button) => {
+    const text = button.dataset.originalText || button.textContent.trim();
+    button.dataset.originalText = text;
+    button.textContent = "";
+
+    Array.from(text).forEach((char, index) => {
+      const letter = document.createElement("span");
+      letter.className = "vapor-letter";
+      letter.textContent = char === " " ? "\u00a0" : char;
+      letter.style.setProperty("--burst-x", `${Math.round((Math.random() - 0.5) * 260)}px`);
+      letter.style.setProperty("--burst-y", `${Math.round(-70 - Math.random() * 160)}px`);
+      letter.style.setProperty("--burst-r", `${Math.round((Math.random() - 0.5) * 260)}deg`);
+      letter.style.setProperty("--burst-delay", `${index * 13 + Math.random() * 90}ms`);
+      button.appendChild(letter);
+    });
+
+    button.classList.add("is-wrong", "is-vaporizing");
+    window.setTimeout(() => {
+      button.classList.add("is-vaporized");
+    }, 860);
   });
 }
 
@@ -157,8 +206,7 @@ function resetQuiz() {
   finaleCard?.classList.remove("is-complete");
 
   document.querySelectorAll("#lore-quiz [data-choice]").forEach((item) => {
-    item.classList.remove("is-selected", "is-correct", "is-wrong");
-    item.disabled = false;
+    restoreQuizButton(item);
   });
 
   setQuizStep(0);
@@ -176,7 +224,7 @@ document.querySelector("#lore-quiz")?.addEventListener("click", (event) => {
   quizLocked = true;
 
   currentStep.querySelectorAll("[data-choice]").forEach((item) => {
-    item.classList.remove("is-selected", "is-correct", "is-wrong");
+    restoreQuizButton(item);
     item.disabled = isCorrect;
   });
   button.classList.add("is-selected", isCorrect ? "is-correct" : "is-wrong");
@@ -188,13 +236,14 @@ document.querySelector("#lore-quiz")?.addEventListener("click", (event) => {
   }
 
   if (result) result.textContent = "";
+  vaporizeWrongAnswers(currentStep, button);
 
   window.setTimeout(() => {
-    quizStep += 1;
+    const nextStep = quizStep + 1;
 
-    if (quizStep < quizAnswers.length) {
+    if (nextStep < quizAnswers.length) {
       if (result) result.textContent = "";
-      setQuizStep(quizStep);
+      setQuizStep(nextStep);
       quizLocked = false;
       return;
     }
@@ -206,14 +255,29 @@ document.querySelector("#lore-quiz")?.addEventListener("click", (event) => {
     }
     finaleCard?.classList.add("is-complete");
     quizLocked = false;
-  }, 520);
+  }, 1150);
 });
+
+document.querySelector("#prev-question")?.addEventListener("click", () => {
+  if (quizLocked || quizStep <= 0) return;
+  const result = document.querySelector("#quiz-result");
+  if (result) result.textContent = "";
+  setQuizStep(quizStep - 1);
+});
+
+document.querySelector("#next-question")?.addEventListener("click", () => {
+  if (quizLocked || quizStep >= quizAnswers.length - 1) return;
+  const result = document.querySelector("#quiz-result");
+  if (result) result.textContent = "";
+  setQuizStep(quizStep + 1);
+});
+
+updateQuizNav();
 
 document.querySelector("#restart-story")?.addEventListener("click", () => {
   resetQuiz();
   history.pushState(null, "", "#hero");
   window.scrollTo({ top: 0, behavior: "smooth" });
-  window.setTimeout(() => replaySectionAnimations(), prefersReducedMotion ? 0 : 700);
 });
 
 document.querySelector("#retake-quiz")?.addEventListener("click", () => {
@@ -222,6 +286,170 @@ document.querySelector("#retake-quiz")?.addEventListener("click", () => {
 });
 
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// TextEffect-style per-char reveal for comic text blocks.
+function splitFadeText(element) {
+  if (!element || prefersReducedMotion) return null;
+  const text = element.textContent.trim();
+  element.setAttribute("aria-label", text);
+  element.classList.add("text-effect-fade");
+
+  let charIndex = 0;
+  const words = text.split(/(\s+)/);
+  const html = words.map((word) => {
+    if (/^\s+$/.test(word)) return " ";
+    const chars = Array.from(word).map((char) => {
+      const span = `<span class="char" aria-hidden="true" style="--char-index:${charIndex}">${char}</span>`;
+      charIndex += 1;
+      return span;
+    });
+    return `<span class="word">${chars.join("")}</span>`;
+  }).join("");
+
+  element.innerHTML = html;
+  return { element, length: charIndex };
+}
+
+// Targets are ordered by how the reader scans each section.
+const textRevealConfigs = [
+  {
+    section: "#about",
+    selectors: [
+      ".about-copy .bubble p",
+      ".about-copy .caption-strip",
+      ".about-relic .bubble",
+      ".about-note h3",
+      ".about-note p"
+    ]
+  },
+  {
+    section: "#story",
+    selectors: [
+      ".story-top-a .panel-tag",
+      ".story-top-a .bubble",
+      ".story-top-b .panel-tag",
+      ".story-top-b .bubble",
+      ".story-top-c .panel-tag",
+      ".story-top-c .bubble",
+      ".story-copy .caption-strip",
+      ".story-copy p"
+    ]
+  },
+  {
+    section: "#battle",
+    selectors: [
+      ".battle-cut .bubble",
+      ".battle-text h3",
+      ".battle-text p"
+    ]
+  },
+  {
+    section: "#fall",
+    selectors: [
+      ".fall-main .bubble",
+      ".fall-text h3",
+      ".fall-text p"
+    ]
+  },
+  {
+    section: "#covenant",
+    selectors: [
+      ".covenant-main .bubble",
+      ".covenant-text p"
+    ]
+  },
+  {
+    section: "#artifacts",
+    selectors: [
+      ".relic-panel:nth-child(1) .bubble",
+      ".relic-panel:nth-child(2) .bubble",
+      ".relic-panel:nth-child(3) .bubble",
+      ".artifacts-note p"
+    ]
+  }
+];
+
+const textRevealTimings = { charStagger: 0.016 };
+
+function setupTextRevealGroup(config) {
+  const section = document.querySelector(config.section);
+  if (!section || prefersReducedMotion) return null;
+
+  const seen = new Set();
+  const blocks = [];
+  config.selectors.forEach((selector) => {
+    section.querySelectorAll(selector).forEach((element) => {
+      if (seen.has(element)) return;
+      seen.add(element);
+      const block = splitFadeText(element);
+      if (block) blocks.push(block);
+    });
+  });
+
+  if (blocks.length === 0) return null;
+  return { section, trigger: blocks[0].element, blocks, played: false, pending: false, timers: [] };
+}
+
+const textRevealGroups = textRevealConfigs
+  .map(setupTextRevealGroup)
+  .filter(Boolean);
+
+function clearTextRevealTimers(group) {
+  group.timers.forEach((timer) => clearTimeout(timer));
+  group.timers = [];
+}
+
+function playTextRevealGroup(group) {
+  if (prefersReducedMotion || !group || group.blocks.length === 0) return;
+  clearTextRevealTimers(group);
+  const { charStagger } = textRevealTimings;
+
+  group.blocks.forEach((block) => block.element.classList.remove("is-visible"));
+
+  let delay = 0;
+  group.blocks.forEach((block) => {
+    const revealAt = Math.round(delay * 1000);
+    group.timers.push(setTimeout(() => {
+      block.element.classList.add("is-visible");
+    }, revealAt));
+    delay += block.length * charStagger;
+  });
+}
+
+function isTextRevealTriggerReady(group) {
+  if (!group?.trigger) return false;
+  const rect = group.trigger.getBoundingClientRect();
+  return rect.top < innerHeight * 0.9 && rect.bottom > innerHeight * 0.05;
+}
+
+function queueTextRevealGroup(group) {
+  if (prefersReducedMotion || !group || group.played || group.pending) return;
+  group.pending = true;
+
+  const runWhenLayoutSettled = (delay = 120) => window.setTimeout(() => {
+    requestAnimationFrame(() => {
+      group.pending = false;
+      if (group.played || !isTextRevealTriggerReady(group)) return;
+      group.played = true;
+      playTextRevealGroup(group);
+    });
+  }, delay);
+
+  if (document.readyState === "complete") {
+    runWhenLayoutSettled();
+  } else {
+    window.addEventListener("load", () => runWhenLayoutSettled(900), { once: true });
+  }
+}
+
+function resetTextRevealVisuals() {
+  textRevealGroups.forEach((group) => {
+    clearTextRevealTimers(group);
+    group.played = false;
+    group.pending = false;
+    group.blocks.forEach((block) => block.element.classList.remove("is-visible"));
+  });
+}
 
 if (!prefersReducedMotion) {
   document.documentElement.classList.add("motion-ready");
@@ -246,11 +474,45 @@ if (!prefersReducedMotion) {
 
   revealElements.forEach((element) => revealObserver.observe(element));
 
+  const heroSection = document.querySelector("#hero");
+
+  // Play once per section; reset only after the reader returns to the hero.
+  const textRevealByTrigger = new Map(
+    textRevealGroups.map((group) => [group.trigger, group])
+  );
+
+  const textRevealObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      const group = textRevealByTrigger.get(entry.target);
+      queueTextRevealGroup(group);
+    });
+  }, { threshold: 0.18, rootMargin: "0px 0px -10% 0px" });
+
+  const heroResetObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      replaySectionAnimations();
+    });
+  }, { threshold: 0.15 });
+
+  textRevealGroups.forEach((group) => textRevealObserver.observe(group.trigger));
+  if (heroSection) heroResetObserver.observe(heroSection);
+
+  requestAnimationFrame(() => {
+    textRevealGroups.forEach((group) => {
+      const rect = group.trigger.getBoundingClientRect();
+      if (rect.top >= innerHeight || rect.bottom <= 0 || group.played) return;
+      queueTextRevealGroup(group);
+    });
+  });
+
   replaySectionAnimations = () => {
     revealElements.forEach((element) => {
       element.classList.remove("is-visible");
       revealObserver.observe(element);
     });
+    resetTextRevealVisuals();
   };
 
   const sectionObserver = new IntersectionObserver((entries) => {

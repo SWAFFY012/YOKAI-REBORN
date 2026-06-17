@@ -52,13 +52,7 @@ canvas {
 }
 
 .grain {
-  position: absolute;
-  z-index: 4;
-  inset: -50%;
-  opacity: .08;
-  pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E");
-  animation: grain .25s steps(2) infinite;
+  display: none;
 }
 
 @keyframes grain {
@@ -197,10 +191,10 @@ canvas {
 
 .scroll-arrow {
   position: static;
-  width: 26px;
-  height: 26px;
+  width: 40px;
+  height: 40px;
   overflow: visible;
-  transform: rotate(-32deg) translateY(1px);
+  transform: rotate(-48deg) translateY(1px);
   transform-origin: center center;
   filter: drop-shadow(0 0 5px rgba(208, 0, 58, .45));
 }
@@ -208,7 +202,7 @@ canvas {
 .scroll-arrow path {
   fill: none;
   stroke: var(--paper);
-  stroke-width: 5;
+  stroke-width: 7;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-dasharray: 520;
@@ -285,6 +279,28 @@ canvas {
   letter-spacing: 0;
   text-transform: uppercase;
   text-shadow: 3px 3px 0 #000;
+}
+
+/* TextEffect-style per-char reveal for comic text blocks. */
+.text-effect-fade .word {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.text-effect-fade .char {
+  display: inline-block;
+  opacity: 0;
+}
+
+.text-effect-fade.is-visible .char {
+  animation: text-effect-fade-in .13s ease forwards;
+  animation-delay: calc(var(--char-index) * .016s);
+}
+
+@keyframes text-effect-fade-in {
+  to {
+    opacity: 1;
+  }
 }
 
 .manga-page {
@@ -674,6 +690,18 @@ canvas {
   max-width: none;
 }
 
+.artifacts .relic-panel .bubble,
+.artifacts-note p {
+  font-family: var(--wild-words);
+  font-size: clamp(18px, 1.45vw, 24px);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  -webkit-text-stroke: .14px currentColor;
+  text-shadow: .42px 0 0 currentColor, 0 .42px 0 currentColor;
+}
+
 .artifact-name {
   position: absolute;
   z-index: 5;
@@ -869,6 +897,25 @@ canvas {
   transition: transform .2s, border-color .2s, background .2s;
 }
 
+.quiz-step button.is-vaporizing {
+  overflow: visible;
+  pointer-events: none;
+}
+
+.quiz-step button.is-vaporized {
+  display: none;
+}
+
+.vapor-letter {
+  display: inline-block;
+  white-space: pre;
+  animation: quiz-vaporize .86s cubic-bezier(.13, .72, .19, 1) forwards;
+  animation-delay: var(--burst-delay, 0ms);
+  text-shadow:
+    0 0 5px rgba(255, 23, 76, .9),
+    0 0 14px rgba(255, 23, 76, .42);
+}
+
 .quiz-step button:disabled {
   cursor: default;
   opacity: 1;
@@ -891,6 +938,43 @@ canvas {
   border-color: #ff174c;
   background: #21050b;
   color: #fff3f6;
+}
+
+.quiz-nav {
+  position: absolute;
+  left: clamp(20px, 2.25vw, 31px);
+  right: clamp(20px, 2.25vw, 31px);
+  bottom: clamp(68px, 6.6vw, 84px);
+  z-index: 3;
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.quiz-nav button {
+  pointer-events: auto;
+  padding: 0;
+  border: 0;
+  color: rgba(241, 232, 220, .68);
+  background: transparent;
+  font-family: var(--wild-words);
+  font-size: clamp(14px, .95vw, 18px);
+  line-height: 1;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-shadow: .4px 0 0 currentColor, 0 .4px 0 currentColor;
+  transition: color .2s, transform .2s, opacity .2s;
+}
+
+.quiz-nav button:hover {
+  color: var(--gold);
+  transform: translateY(-1px) skew(-3deg);
+}
+
+.quiz-nav button:disabled {
+  opacity: .26;
+  cursor: default;
+  transform: none;
 }
 
 .quiz-result {
@@ -922,6 +1006,10 @@ canvas {
   align-self: flex-start;
   width: min(640px, 100%);
   margin-left: 0;
+}
+
+.finale-card.is-complete .quiz-nav {
+  display: none;
 }
 
 .finale-actions {
@@ -989,6 +1077,22 @@ canvas {
 @keyframes red-pulse {
   0%, 100% { box-shadow: 8px 8px 0 #000, 0 0 0 rgba(255, 23, 76, 0); }
   50% { box-shadow: 8px 8px 0 #000, 0 0 28px rgba(255, 23, 76, .42); }
+}
+
+@keyframes quiz-vaporize {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+    filter: blur(0);
+  }
+  62% {
+    opacity: .78;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--burst-x), var(--burst-y), 0) rotate(var(--burst-r)) scale(.18);
+    filter: blur(7px);
+  }
 }
 
 .motion-ready .reveal {
