@@ -1,4 +1,4 @@
-const FRAME_COUNT = 76;
+const FRAME_COUNT = 151;
 const canvas = document.querySelector("#eye-sequence");
 const ctx = canvas?.getContext("2d", { alpha: false });
 const hero = document.querySelector(".hero-scroll");
