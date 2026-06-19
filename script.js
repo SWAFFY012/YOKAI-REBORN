@@ -7,11 +7,14 @@ const blackout = document.querySelector(".iris-blackout");
 const counter = document.querySelector("#progress");
 const aboutSection = document.querySelector("#about");
 const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+const HERO_DIVE_WHEEL_DISTANCE = 900;
 
 let heroDiveStarted = false;
 let heroDiveCompleted = false;
 let heroDiveRaf = 0;
-let touchStartY = 0;
+let heroDiveProgress = 0;
+let heroDiveTarget = 0;
+let touchLastY = 0;
 
 function setHeroDiveProgress(progress) {
   const clamped = Math.min(1, Math.max(0, progress));
@@ -24,8 +27,11 @@ function setHeroDiveProgress(progress) {
 
 function resetHeroDive() {
   cancelAnimationFrame(heroDiveRaf);
+  heroDiveRaf = 0;
   heroDiveStarted = false;
   heroDiveCompleted = false;
+  heroDiveProgress = 0;
+  heroDiveTarget = 0;
 
   if (eyeSequence) {
     eyeSequence.pause();
@@ -46,6 +52,9 @@ function finishHeroDive() {
   if (heroDiveCompleted) return;
   heroDiveCompleted = true;
   cancelAnimationFrame(heroDiveRaf);
+  heroDiveRaf = 0;
+  heroDiveProgress = 1;
+  heroDiveTarget = 1;
   setHeroDiveProgress(1);
 
   if (!aboutSection) return;
@@ -57,11 +66,21 @@ function finishHeroDive() {
   });
 }
 
-function trackHeroDive() {
+function renderHeroDive() {
+  heroDiveRaf = 0;
   if (!eyeSequence || heroDiveCompleted) return;
+  heroDiveProgress = heroDiveTarget;
+
   const duration = Number.isFinite(eyeSequence.duration) ? eyeSequence.duration : 0;
-  setHeroDiveProgress(duration ? eyeSequence.currentTime / duration : 0);
-  heroDiveRaf = requestAnimationFrame(trackHeroDive);
+  if (duration) {
+    const lastFrameTime = Math.max(0, duration - 1 / 48);
+    eyeSequence.currentTime = heroDiveProgress * lastFrameTime;
+  }
+  setHeroDiveProgress(heroDiveProgress);
+
+  if (heroDiveProgress >= 1) {
+    finishHeroDive();
+  }
 }
 
 function startHeroDive() {
@@ -79,15 +98,21 @@ function startHeroDive() {
     return;
   }
 
-  eyeSequence.currentTime = 0;
+  eyeSequence.pause();
   eyeSequence.style.opacity = 1;
   if (video) video.style.opacity = 0;
+}
 
-  eyeSequence.play().then(() => {
-    heroDiveRaf = requestAnimationFrame(trackHeroDive);
-  }).catch(() => {
-    heroDiveStarted = false;
-  });
+function requestHeroDiveRender() {
+  if (heroDiveRaf) return;
+  heroDiveRaf = requestAnimationFrame(renderHeroDive);
+}
+
+function moveHeroDive(deltaPixels) {
+  startHeroDive();
+  if (!heroDiveStarted || heroDiveCompleted) return;
+  heroDiveTarget = Math.min(1, Math.max(0, heroDiveTarget + deltaPixels / HERO_DIVE_WHEEL_DISTANCE));
+  requestHeroDiveRender();
 }
 
 function isHeroActive() {
@@ -97,27 +122,33 @@ function isHeroActive() {
 }
 
 function handleHeroWheel(event) {
-  if (event.deltaY <= 0 || heroDiveCompleted || !isHeroActive()) return;
+  if (heroDiveCompleted || !isHeroActive()) return;
+  if (event.deltaY < 0 && !heroDiveStarted) return;
+
+  const multiplier = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? innerHeight : 1;
   event.preventDefault();
-  startHeroDive();
+  moveHeroDive(event.deltaY * multiplier);
 }
 
 function handleHeroKey(event) {
   if (!isHeroActive() || heroDiveCompleted) return;
   if (!["ArrowDown", "PageDown", " "].includes(event.key)) return;
   event.preventDefault();
-  startHeroDive();
+  moveHeroDive(event.key === "ArrowDown" ? 180 : 360);
 }
 
 function handleHeroTouchStart(event) {
-  touchStartY = event.touches[0]?.clientY || 0;
+  touchLastY = event.touches[0]?.clientY || 0;
 }
 
 function handleHeroTouchMove(event) {
   const currentY = event.touches[0]?.clientY || 0;
-  if (touchStartY - currentY < 8 || heroDiveCompleted || !isHeroActive()) return;
+  const delta = touchLastY - currentY;
+  touchLastY = currentY;
+  if (heroDiveCompleted || !isHeroActive()) return;
+  if (delta < 0 && !heroDiveStarted) return;
   event.preventDefault();
-  startHeroDive();
+  moveHeroDive(delta * 2);
 }
 
 function scrollToHash(hash, behavior = "smooth") {
@@ -554,7 +585,9 @@ window.addEventListener("wheel", handleHeroWheel, { passive: false });
 window.addEventListener("keydown", handleHeroKey);
 window.addEventListener("touchstart", handleHeroTouchStart, { passive: true });
 window.addEventListener("touchmove", handleHeroTouchMove, { passive: false });
-eyeSequence?.addEventListener("ended", finishHeroDive);
+eyeSequence?.addEventListener("loadedmetadata", () => {
+  if (heroDiveStarted && !heroDiveCompleted) requestHeroDiveRender();
+});
 
 video?.play().catch(() => {});
 eyeSequence?.load();
