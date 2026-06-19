@@ -1,9 +1,4 @@
-const FRAME_COUNT = 151;
-const FRAME_START = 40;
-const FRAME_END = FRAME_COUNT - 1;
-const SEQUENCE_SCROLL_END = 0.68;
-const canvas = document.querySelector("#eye-sequence");
-const ctx = canvas?.getContext("2d", { alpha: false });
+const eyeSequence = document.querySelector("#eye-sequence");
 const hero = document.querySelector(".hero-scroll");
 const video = document.querySelector(".hero-video");
 const copy = document.querySelector(".hero-copy");
@@ -11,152 +6,125 @@ const cue = document.querySelector(".scroll-cue");
 const blackout = document.querySelector(".iris-blackout");
 const counter = document.querySelector("#progress");
 const aboutSection = document.querySelector("#about");
-const frames = Array(FRAME_COUNT);
-const loadingFrames = new Set();
+const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-let currentFrame = -1;
-let desiredFrame = 0;
-let rafPending = false;
-let heroPassThroughLocked = false;
-let lastHeroScrollY = window.scrollY;
+let heroDiveStarted = false;
+let heroDiveCompleted = false;
+let heroDiveRaf = 0;
+let touchStartY = 0;
 
-const src = (index) => `public/frames/eye-${String(index + 1).padStart(3, "0")}.webp`;
+function setHeroDiveProgress(progress) {
+  const clamped = Math.min(1, Math.max(0, progress));
+  const blackoutProgress = Math.min(1, Math.max(0, (clamped - 0.78) / 0.22));
 
-function loadFrame(index) {
-  if (index < 0 || index >= FRAME_COUNT || frames[index] || loadingFrames.has(index)) return;
-  loadingFrames.add(index);
-  const image = new Image();
-  image.decoding = "async";
-  image.loading = "eager";
-  image.fetchPriority = "high";
-  image.src = src(index);
-  image.onload = () => {
-    loadingFrames.delete(index);
-    frames[index] = image;
-    const isNeededFrame = desiredFrame >= currentFrame
-      ? index <= desiredFrame && index >= currentFrame
-      : index >= desiredFrame && index <= currentFrame;
-    if (isNeededFrame) render(index);
-  };
-  image.onerror = () => loadingFrames.delete(index);
+  if (blackout) blackout.style.opacity = blackoutProgress;
+  if (counter) counter.textContent = String(Math.round(clamped * 100)).padStart(2, "0");
+  document.documentElement.style.setProperty("--progress", `${clamped * 100}%`);
 }
 
-function preloadRange(start, end) {
-  const from = Math.max(0, start);
-  const to = Math.min(FRAME_COUNT - 1, end);
-  for (let i = from; i <= to; i++) loadFrame(i);
-}
+function resetHeroDive() {
+  cancelAnimationFrame(heroDiveRaf);
+  heroDiveStarted = false;
+  heroDiveCompleted = false;
 
-function preloadHeroSequence() {
-  preloadRange(0, FRAME_COUNT - 1);
-}
-
-function passThroughHero(sequenceProgress, isScrollingDown) {
-  if (!aboutSection || heroPassThroughLocked || !isScrollingDown || sequenceProgress < 0.9) return;
-
-  heroPassThroughLocked = true;
-  desiredFrame = FRAME_COUNT - 1;
-  loadFrame(desiredFrame);
-  render(desiredFrame);
-
-  requestAnimationFrame(() => {
-    const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
-    aboutSection.scrollIntoView({ behavior, block: "start" });
-  });
-
-  window.setTimeout(() => {
-    heroPassThroughLocked = false;
-  }, 1400);
-}
-
-function sizeCanvas() {
-  if (!canvas) return;
-  const dpr = Math.min(devicePixelRatio || 1, 2);
-  canvas.width = innerWidth * dpr;
-  canvas.height = innerHeight * dpr;
-  render(Math.max(currentFrame, 0));
-}
-
-function render(index) {
-  if (!canvas || !ctx) return;
-
-  let renderIndex = index;
-  let image = frames[renderIndex];
-  if (!image) {
-    const isMovingForward = index >= currentFrame;
-    if (isMovingForward) {
-      for (let i = index; i >= Math.max(currentFrame, 0); i--) {
-        if (!frames[i]) continue;
-        renderIndex = i;
-        image = frames[i];
-        break;
-      }
-    } else {
-      for (let i = index; i <= currentFrame; i++) {
-        if (!frames[i]) continue;
-        renderIndex = i;
-        image = frames[i];
-        break;
-      }
-    }
-
-    if (!image) return;
+  if (eyeSequence) {
+    eyeSequence.pause();
+    eyeSequence.currentTime = 0;
+    eyeSequence.style.opacity = 0;
   }
-
-  const scale = Math.max(canvas.width / image.naturalWidth, canvas.height / image.naturalHeight);
-  const width = image.naturalWidth * scale;
-  const height = image.naturalHeight * scale;
-  ctx.drawImage(image, (canvas.width - width) / 2, (canvas.height - height) / 2, width, height);
-  currentFrame = renderIndex;
-}
-
-function updateHero() {
-  rafPending = false;
-  if (!hero) return;
-
-  const rect = hero.getBoundingClientRect();
-  const distance = hero.offsetHeight - innerHeight;
-  const scrollY = window.scrollY;
-  const isScrollingDown = scrollY > lastHeroScrollY;
-  const progress = Math.min(1, Math.max(0, -rect.top / distance));
-  const sequenceProgress = Math.min(1, Math.max(0, progress / SEQUENCE_SCROLL_END));
-  desiredFrame = FRAME_START + Math.round(sequenceProgress * (FRAME_END - FRAME_START));
-  const diveProgress = Math.min(1, Math.max(0, (sequenceProgress - 0.78) / 0.22));
-
-  const canvasOpacity = sequenceProgress > 0 ? Math.min(1, sequenceProgress * 8) : 0;
-  if (canvas) canvas.style.opacity = canvasOpacity;
-  if (video) video.style.opacity = Math.max(0, 1 - canvasOpacity);
-
-  const copyOpacity = Math.max(0, 1 - progress * 5);
+  if (video) video.style.opacity = 1;
   if (copy) {
-    copy.style.opacity = copyOpacity;
-    copy.style.transform = `translateY(calc(-42% - ${progress * 60}px))`;
+    copy.style.opacity = "";
+    copy.style.transform = "";
   }
-  if (cue) cue.style.opacity = Math.max(0, 1 - progress * 2.5);
-  if (blackout) blackout.style.opacity = diveProgress;
-  if (counter) counter.textContent = String(Math.round(sequenceProgress * 100)).padStart(2, "0");
-  document.documentElement.style.setProperty("--progress", `${sequenceProgress * 100}%`);
-
-  loadFrame(desiredFrame);
-  for (let i = 1; i <= 18; i++) {
-    loadFrame(Math.min(FRAME_COUNT - 1, desiredFrame + i));
-    loadFrame(Math.max(0, desiredFrame - i));
-  }
-  render(desiredFrame);
-  passThroughHero(sequenceProgress, isScrollingDown);
-  lastHeroScrollY = scrollY;
+  if (cue) cue.style.opacity = "";
+  if (blackout) blackout.style.opacity = 0;
+  setHeroDiveProgress(0);
 }
 
-function requestHeroUpdate() {
-  if (rafPending) return;
-  rafPending = true;
-  requestAnimationFrame(updateHero);
+function finishHeroDive() {
+  if (heroDiveCompleted) return;
+  heroDiveCompleted = true;
+  cancelAnimationFrame(heroDiveRaf);
+  setHeroDiveProgress(1);
+
+  if (!aboutSection) return;
+  const previousScrollBehavior = document.documentElement.style.scrollBehavior;
+  document.documentElement.style.scrollBehavior = "auto";
+  window.scrollTo(0, aboutSection.offsetTop);
+  requestAnimationFrame(() => {
+    document.documentElement.style.scrollBehavior = previousScrollBehavior;
+  });
+}
+
+function trackHeroDive() {
+  if (!eyeSequence || heroDiveCompleted) return;
+  const duration = Number.isFinite(eyeSequence.duration) ? eyeSequence.duration : 0;
+  setHeroDiveProgress(duration ? eyeSequence.currentTime / duration : 0);
+  heroDiveRaf = requestAnimationFrame(trackHeroDive);
+}
+
+function startHeroDive() {
+  if (!eyeSequence || heroDiveStarted || heroDiveCompleted) return;
+  heroDiveStarted = true;
+
+  if (copy) {
+    copy.style.opacity = 0;
+    copy.style.transform = "translateY(calc(-45% - 60px))";
+  }
+  if (cue) cue.style.opacity = 0;
+
+  if (reducedMotionQuery.matches) {
+    finishHeroDive();
+    return;
+  }
+
+  eyeSequence.currentTime = 0;
+  eyeSequence.style.opacity = 1;
+  if (video) video.style.opacity = 0;
+
+  eyeSequence.play().then(() => {
+    heroDiveRaf = requestAnimationFrame(trackHeroDive);
+  }).catch(() => {
+    heroDiveStarted = false;
+  });
+}
+
+function isHeroActive() {
+  if (!hero) return false;
+  const rect = hero.getBoundingClientRect();
+  return rect.top <= 1 && rect.bottom >= innerHeight * 0.8;
+}
+
+function handleHeroWheel(event) {
+  if (event.deltaY <= 0 || heroDiveCompleted || !isHeroActive()) return;
+  event.preventDefault();
+  startHeroDive();
+}
+
+function handleHeroKey(event) {
+  if (!isHeroActive() || heroDiveCompleted) return;
+  if (!["ArrowDown", "PageDown", " "].includes(event.key)) return;
+  event.preventDefault();
+  startHeroDive();
+}
+
+function handleHeroTouchStart(event) {
+  touchStartY = event.touches[0]?.clientY || 0;
+}
+
+function handleHeroTouchMove(event) {
+  const currentY = event.touches[0]?.clientY || 0;
+  if (touchStartY - currentY < 8 || heroDiveCompleted || !isHeroActive()) return;
+  event.preventDefault();
+  startHeroDive();
 }
 
 function scrollToHash(hash, behavior = "smooth") {
   if (!hash || hash === "#") return;
   const target = document.querySelector(hash);
   if (!target) return;
+  if (hash === "#hero") resetHeroDive();
   target.scrollIntoView({ behavior, block: "start" });
 }
 
@@ -582,15 +550,15 @@ if (!prefersReducedMotion) {
   document.querySelectorAll(".manga-section").forEach((section) => sectionObserver.observe(section));
 }
 
-loadFrame(0);
-preloadHeroSequence();
-
-window.addEventListener("resize", sizeCanvas);
-window.addEventListener("scroll", requestHeroUpdate, { passive: true });
+window.addEventListener("wheel", handleHeroWheel, { passive: false });
+window.addEventListener("keydown", handleHeroKey);
+window.addEventListener("touchstart", handleHeroTouchStart, { passive: true });
+window.addEventListener("touchmove", handleHeroTouchMove, { passive: false });
+eyeSequence?.addEventListener("ended", finishHeroDive);
 
 video?.play().catch(() => {});
-sizeCanvas();
-updateHero();
+eyeSequence?.load();
+resetHeroDive();
 
 if (location.hash) {
   requestAnimationFrame(() => requestAnimationFrame(() => scrollToHash(location.hash, "auto")));

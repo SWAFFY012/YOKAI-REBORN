@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#050405">
   <title>Yokai Reborn</title>
   <link rel="stylesheet" href="public/fonts/google-fonts.css">
-  <link rel="stylesheet" href="styles.css?v=20260618-hero-remap">
+  <link rel="stylesheet" href="styles.css?v=20260619-eye-dive">
 </head>
 <body>
   <header class="nav">
@@ -28,7 +28,9 @@
         <video class="hero-video" autoplay muted loop playsinline preload="auto">
           <source src="public/videos/blinking-eye.mp4" type="video/mp4">
         </video>
-        <canvas id="eye-sequence" aria-label="Погружение в красный глаз, управляемое прокруткой"></canvas>
+        <video id="eye-sequence" muted playsinline preload="auto" poster="public/frames/eye-041.webp" aria-label="Погружение в красный глаз">
+          <source src="public/videos/eye-dive.mp4" type="video/mp4">
+        </video>
         <div class="shade"></div>
         <div class="grain"></div>
 
@@ -314,6 +316,6 @@
       </div>
     </section>
   </main>
-  <script src="script.js?v=20260618-hero-remap"></script>
+  <script src="script.js?v=20260619-eye-dive"></script>
 </body>
 </html>

@@ -99,7 +99,7 @@ canvas {
 }
 
 .hero-scroll {
-  height: 220vh;
+  height: 100vh;
 }
 
 .hero-sticky {
@@ -127,6 +127,8 @@ canvas {
 #eye-sequence {
   z-index: 2;
   opacity: 0;
+  background: #020203;
+  will-change: opacity;
 }
 
 .shade {
@@ -1189,7 +1191,7 @@ canvas {
 
 @media (max-width: 640px) {
   .hero-scroll {
-    height: 220vh;
+    height: 100vh;
   }
 
   .hero-copy {
