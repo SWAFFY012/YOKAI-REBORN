@@ -7,13 +7,17 @@ const blackout = document.querySelector(".iris-blackout");
 const counter = document.querySelector("#progress");
 const aboutSection = document.querySelector("#about");
 const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-const HERO_DIVE_WHEEL_DISTANCE = 900;
+const HERO_DIVE_FRAME_COUNT = 101;
+const HERO_DIVE_LAST_FRAME = HERO_DIVE_FRAME_COUNT - 1;
+const HERO_DIVE_WHEEL_DISTANCE = 2400;
+const HERO_DIVE_RETURN_PROGRESS = 0.76;
 
 let heroDiveStarted = false;
 let heroDiveCompleted = false;
 let heroDiveRaf = 0;
 let heroDiveProgress = 0;
-let heroDiveTarget = 0;
+let heroDiveFrame = 0;
+let heroDiveTargetFrame = 0;
 let touchLastY = 0;
 
 function setHeroDiveProgress(progress) {
@@ -31,7 +35,8 @@ function resetHeroDive() {
   heroDiveStarted = false;
   heroDiveCompleted = false;
   heroDiveProgress = 0;
-  heroDiveTarget = 0;
+  heroDiveFrame = 0;
+  heroDiveTargetFrame = 0;
 
   if (eyeSequence) {
     eyeSequence.pause();
@@ -54,7 +59,8 @@ function finishHeroDive() {
   cancelAnimationFrame(heroDiveRaf);
   heroDiveRaf = 0;
   heroDiveProgress = 1;
-  heroDiveTarget = 1;
+  heroDiveFrame = HERO_DIVE_LAST_FRAME;
+  heroDiveTargetFrame = HERO_DIVE_LAST_FRAME;
   setHeroDiveProgress(1);
 
   if (!aboutSection) return;
@@ -69,7 +75,12 @@ function finishHeroDive() {
 function renderHeroDive() {
   heroDiveRaf = 0;
   if (!eyeSequence || heroDiveCompleted) return;
-  heroDiveProgress = heroDiveTarget;
+
+  const targetFrame = Math.round(heroDiveTargetFrame);
+  if (heroDiveFrame !== targetFrame) {
+    heroDiveFrame += Math.sign(targetFrame - heroDiveFrame);
+  }
+  heroDiveProgress = heroDiveFrame / HERO_DIVE_LAST_FRAME;
 
   const duration = Number.isFinite(eyeSequence.duration) ? eyeSequence.duration : 0;
   if (duration) {
@@ -78,8 +89,18 @@ function renderHeroDive() {
   }
   setHeroDiveProgress(heroDiveProgress);
 
-  if (heroDiveProgress >= 1) {
+  if (heroDiveFrame >= HERO_DIVE_LAST_FRAME && targetFrame >= HERO_DIVE_LAST_FRAME) {
     finishHeroDive();
+    return;
+  }
+
+  if (heroDiveFrame <= 0 && targetFrame <= 0) {
+    resetHeroDive();
+    return;
+  }
+
+  if (heroDiveFrame !== targetFrame) {
+    heroDiveRaf = requestAnimationFrame(renderHeroDive);
   }
 }
 
@@ -111,7 +132,29 @@ function requestHeroDiveRender() {
 function moveHeroDive(deltaPixels) {
   startHeroDive();
   if (!heroDiveStarted || heroDiveCompleted) return;
-  heroDiveTarget = Math.min(1, Math.max(0, heroDiveTarget + deltaPixels / HERO_DIVE_WHEEL_DISTANCE));
+  const frameDelta = deltaPixels / HERO_DIVE_WHEEL_DISTANCE * HERO_DIVE_LAST_FRAME;
+  heroDiveTargetFrame = Math.min(HERO_DIVE_LAST_FRAME, Math.max(0, heroDiveTargetFrame + frameDelta));
+  requestHeroDiveRender();
+}
+
+function restoreHeroForReverse() {
+  if (!heroDiveCompleted || !hero || !eyeSequence) return;
+  const rect = hero.getBoundingClientRect();
+  if (rect.bottom <= 0 || rect.top >= innerHeight) return;
+
+  const returnFrame = Math.round(HERO_DIVE_LAST_FRAME * HERO_DIVE_RETURN_PROGRESS);
+  heroDiveCompleted = false;
+  heroDiveStarted = true;
+  heroDiveFrame = returnFrame;
+  heroDiveTargetFrame = returnFrame;
+  heroDiveProgress = returnFrame / HERO_DIVE_LAST_FRAME;
+
+  eyeSequence.pause();
+  eyeSequence.style.opacity = 1;
+  if (video) video.style.opacity = 0;
+  if (copy) copy.style.opacity = 0;
+  if (cue) cue.style.opacity = 0;
+  setHeroDiveProgress(heroDiveProgress);
   requestHeroDiveRender();
 }
 
@@ -582,6 +625,7 @@ if (!prefersReducedMotion) {
 }
 
 window.addEventListener("wheel", handleHeroWheel, { passive: false });
+window.addEventListener("scroll", restoreHeroForReverse, { passive: true });
 window.addEventListener("keydown", handleHeroKey);
 window.addEventListener("touchstart", handleHeroTouchStart, { passive: true });
 window.addEventListener("touchmove", handleHeroTouchMove, { passive: false });
