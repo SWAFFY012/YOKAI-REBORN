@@ -931,9 +931,14 @@ canvas {
 }
 
 .quiz-step button.is-correct {
+  position: relative;
+  z-index: 2;
   border-color: #7dff9f;
   background: #092112;
   color: #f4fff6;
+  transform: translateX(8px) skew(-3deg) scale(1.04);
+  transform-origin: center;
+  box-shadow: 0 0 24px rgba(125, 255, 159, .2);
 }
 
 .quiz-step button.is-wrong {
@@ -946,7 +951,7 @@ canvas {
   position: absolute;
   left: clamp(20px, 2.25vw, 31px);
   right: clamp(20px, 2.25vw, 31px);
-  bottom: clamp(68px, 6.6vw, 84px);
+  bottom: clamp(126px, 9.5vw, 152px);
   z-index: 3;
   display: flex;
   justify-content: space-between;

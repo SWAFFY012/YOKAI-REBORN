@@ -229,6 +229,7 @@ document.querySelector(".answers")?.addEventListener("click", (event) => {
 });
 
 const quizAnswers = ["blood", "mask", "memory", "ghost", "remember"];
+const QUIZ_CORRECT_HOLD_MS = 3000;
 let quizStep = 0;
 let quizLocked = false;
 let replaySectionAnimations = () => {};
@@ -349,7 +350,7 @@ document.querySelector("#lore-quiz")?.addEventListener("click", (event) => {
     }
     finaleCard?.classList.add("is-complete");
     quizLocked = false;
-  }, 1150);
+  }, QUIZ_CORRECT_HOLD_MS);
 });
 
 document.querySelector("#prev-question")?.addEventListener("click", () => {
