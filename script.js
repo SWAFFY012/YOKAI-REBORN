@@ -10,7 +10,6 @@ const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)")
 const HERO_DIVE_FRAME_COUNT = 101;
 const HERO_DIVE_LAST_FRAME = HERO_DIVE_FRAME_COUNT - 1;
 const HERO_DIVE_WHEEL_DISTANCE = 2400;
-const HERO_DIVE_RETURN_PROGRESS = 0.76;
 
 let heroDiveStarted = false;
 let heroDiveCompleted = false;
@@ -142,20 +141,18 @@ function restoreHeroForReverse() {
   const rect = hero.getBoundingClientRect();
   if (rect.bottom <= 0 || rect.top >= innerHeight) return;
 
-  const returnFrame = Math.round(HERO_DIVE_LAST_FRAME * HERO_DIVE_RETURN_PROGRESS);
   heroDiveCompleted = false;
   heroDiveStarted = true;
-  heroDiveFrame = returnFrame;
-  heroDiveTargetFrame = returnFrame;
-  heroDiveProgress = returnFrame / HERO_DIVE_LAST_FRAME;
+  heroDiveFrame = HERO_DIVE_LAST_FRAME;
+  heroDiveTargetFrame = HERO_DIVE_LAST_FRAME;
+  heroDiveProgress = 1;
 
   eyeSequence.pause();
   eyeSequence.style.opacity = 1;
   if (video) video.style.opacity = 0;
   if (copy) copy.style.opacity = 0;
   if (cue) cue.style.opacity = 0;
-  setHeroDiveProgress(heroDiveProgress);
-  requestHeroDiveRender();
+  setHeroDiveProgress(1);
 }
 
 function isHeroActive() {
